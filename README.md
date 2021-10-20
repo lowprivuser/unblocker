@@ -22,8 +22,8 @@ Burp Suite extension for encoding/decoding EVM calldata
 Unblocker features ABI-less EVM calldata decoding but you can also provide the ABI yourself if you know it.
 Encoding does require you to provide some ABI.
 
-ABI has to be provided like so: `transfer(address, uint256)`.
-Input data (for decoding) can be provided with or without `0x` prepended.
-Input data strings (for encoding) have to be provided like so: `"s'hello, world'"`
-Input data bytes (for encoding) have to be provided like so: `"b'deadbeef'"`
-Input data structs (for encoding) have to be provided with square brackets instead of parenthesis, like so: `["s'some string'", true, 123]`
+- ABI has to be provided like so: `transfer(address, uint256)`.
+- Input data (for decoding) can be provided with or without `0x` prepended.
+- Input data strings (for encoding) have to be provided like so: `"s'hello, world'"`
+- Input data bytes (for encoding) have to be provided like so: `"b'deadbeef'"`
+- Input data structs (for encoding) have to be provided with square brackets instead of parenthesis, like so: `["s'some string'", true, 123]`
