@@ -2,7 +2,7 @@ import urllib
 from com.esaulpaugh.headlong.util import FastHex
 from com.esaulpaugh.headlong.abi import Function
 from com.esaulpaugh.headlong.util import Strings;
-from com.esaulpaugh.headlong.util import SuperSerial; 
+from com.esaulpaugh.headlong.util import SuperSerial;
 import simplejson
 
 TYPE_TX = 'tx'
@@ -41,7 +41,7 @@ def encode(arguments = None):
                 if abi:
                     # abi was provided by user
                     abi = abi.strip()
-                    
+
                     # replace parenthesis with brackets
                     input_data = "[{}]".format(input_data[1:-1])
 
@@ -53,7 +53,7 @@ def encode(arguments = None):
 
                         return result
                     try:
-                        # try parsing the input to json    
+                        # try parsing the input to json
                         input_data = simplejson.loads(input_data)
                     except:
                         result['error'] = "parsing input data from string failed"
@@ -129,7 +129,7 @@ def decode(arguments = None):
                         # casting to python list makes the tuple mutable
                         result_raw = None
                         function_name = Function.parse(signature)
-                        
+
                         try:
                             result_raw = list(function_name.decodeCall(FastHex.decode(input_data_with_signature)))
                         except:
@@ -145,7 +145,7 @@ def decode(arguments = None):
                 result['error'] = "[-] type \"{}\" not supported for format \"\"".format(input_type, __name__)
     else:
         result['error'] = args['error']
-    
+
     return result
 
 def _parse_params_for_encode(input_data):
@@ -173,7 +173,7 @@ def _parse_param_for_encode(input_data):
                 result = "0{}".format(result)
         except:
             identifier = input_data[:2]
-            
+
             if identifier == HEX_PREFIX:
                 # it's an address
                 result = input_data[2:].lower()
@@ -185,7 +185,7 @@ def _parse_param_for_encode(input_data):
             elif identifier == "b'":
                 # it's bytes
                 result = input_data[2:-1].lower()
-                
+
                 if len(result) % 2:
                     # pad if odd
                     result = "0{}".format(result)
@@ -196,7 +196,7 @@ def _parse_param_for_encode(input_data):
 # parse a Java iterable to Python
 def _parse_params_for_decode(parameters):
     result = []
-    
+
     for parameter in parameters:
         result.append(_parse_param_for_decode(parameter))
 
@@ -214,7 +214,9 @@ def _parse_param_for_decode(parameter):
                 # convert Java int8 bytes to Python uint8
                 # courtesy of stackoverflow
                 parameter = ''.join('{:02x}'.format(array_element & 0xff) for array_element in parameter)
-                result = parameter
+
+                # remove not significant 0s
+                result = hex(int(parameter, 16))[:-1] if hex(int(parameter, 16))[-1:] == 'L' else hex(int(parameter, 16))
             else:
                 # it's an another type of array
                 result = _parse_params_for_decode(parameter)
@@ -228,7 +230,7 @@ def _parse_param_for_decode(parameter):
                 result = hex(parameter)[:-1]
             # otherwise leave it as is
             else:
-                result = parameter    
+                result = parameter
         except:
             result = parameter
 
@@ -243,11 +245,13 @@ def _parse_args_for_codec(arguments = None):
         input_type = arguments['type'] if 'type' in arguments and  _validate_argument(arguments['type']) else None
         abi = arguments['abi'] if 'abi' in arguments and  _validate_argument(arguments['abi'])  else None
         input_data = arguments['input'] if 'input' in arguments and  _validate_argument(arguments['input']) else None
-        result['data'] = input_type, abi, input_data
-        result['error'] = None
+
+        if input_data:
+            result['data'] = input_type, abi, input_data
+            result['error'] = None
     else:
         result['data'] = "abi or input data invalid"
-    
+
     return result
 
 def _validate_argument(argument = None):
@@ -268,7 +272,7 @@ def _lookup_function_signatures(hex_signature = None):
 
             try:
                 response_data = simplejson.loads(response)
-                
+
                 if response_data['count'] > 0:
                     result['error'] = None
                     result['data'] = [element['text_signature'] for element in response_data['results']]
